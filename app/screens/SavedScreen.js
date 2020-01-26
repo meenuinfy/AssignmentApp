@@ -65,15 +65,18 @@ class SavedScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        {this.props.pins && this.props.pins.length === 0 && (
-          <Text style={styles.nodataText}>No Data</Text>
+        {this.props.pins && this.props.pins.length === 0 ? (
+          <View style={styles.nodataText}>
+            <Text>No Data</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={this.props.pins}
+            renderItem={item => this.renderItemList(item)}
+            keyExtractor={item => item.id}
+            extraData={this.state.refreshed}
+          />
         )}
-        <FlatList
-          data={this.props.pins}
-          renderItem={item => this.renderItemList(item)}
-          keyExtractor={item => item.id}
-          extraData={this.state.refreshed}
-        />
       </View>
     );
   }
@@ -98,7 +101,9 @@ const styles = EStyleSheet.create({
     color: '#fff',
   },
   nodataText: {
-    alignSelf: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

@@ -68,10 +68,11 @@ class GenerateScreen extends React.Component {
   validateData = pins => {
     let dataValidated = true;
     for (let i = 0; i < pins.length; i++) {
-      if (dataValidated) {
+      if (dataValidated && pins[i] !== '') {
         for (let j = 0; j < pins.length; j++) {
           if (i !== j) {
             if (pins[i] === pins[j] && (pins[i] !== '' && pins[j] !== '')) {
+              console.log('failed');
               dataValidated = false;
               break;
             }
@@ -83,20 +84,30 @@ class GenerateScreen extends React.Component {
             if (charArr.length < 4) {
               dataValidated = false;
               break;
-            } else if (k !== 3) {
+            } else if (k < 3) {
               if (charArr[k] === charArr[k + 1]) {
+                console.log('failed = ');
                 dataValidated = false;
               } else if (
                 k < 2 &&
-                Math.abs(parseInt(charArr[k]) - parseInt(charArr[k + 1])) ===
-                  1 &&
-                Math.abs(parseInt(charArr[k]) - parseInt(charArr[k + 2])) === 2
+                parseInt(charArr[k]) - parseInt(charArr[k + 1]) === 1 &&
+                parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === 1
               ) {
+                console.log('failed sum');
+                dataValidated = false;
+              } else if (
+                k < 2 &&
+                parseInt(charArr[k]) - parseInt(charArr[k + 1]) === -1 &&
+                parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === -1
+              ) {
+                console.log('failed sum');
                 dataValidated = false;
               }
             }
           }
         }
+      } else {
+        dataValidated = false;
       }
     }
 
