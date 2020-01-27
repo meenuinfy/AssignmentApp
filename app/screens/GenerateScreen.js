@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextInput, View} from 'react-native';
+import {Text, View, TouchableWithoutFeedback, Keyboard} from 'react-native';
 import EStyleSheet from 'react-native-extended-stylesheet';
 import {connect} from 'react-redux';
 
@@ -12,11 +12,13 @@ class GenerateScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      boxOne: '',
-      boxTwo: '',
-      boxThree: '',
-      boxFour: '',
-      boxFive: '',
+      boxOne: null,
+      boxTwo: null,
+      boxThree: null,
+      boxFour: null,
+      boxFive: null,
+      showError: false,
+      errorText: '',
     };
   }
 
@@ -30,11 +32,11 @@ class GenerateScreen extends React.Component {
 
   componentDidFocus(payload) {
     this.setState({
-      boxOne: '',
-      boxTwo: '',
-      boxThree: '',
-      boxFour: '',
-      boxFive: '',
+      boxOne: null,
+      boxTwo: null,
+      boxThree: null,
+      boxFour: null,
+      boxFive: null,
     });
   }
 
@@ -68,11 +70,21 @@ class GenerateScreen extends React.Component {
   validateData = pins => {
     let dataValidated = true;
     for (let i = 0; i < pins.length; i++) {
-      if (dataValidated && pins[i] !== '') {
+      if (dataValidated && pins[i] !== null) {
         for (let j = 0; j < pins.length; j++) {
           if (i !== j) {
-            if (pins[i] === pins[j] && (pins[i] !== '' && pins[j] !== '')) {
-              console.log('failed');
+            if (pins[i] === null) {
+              this.setState({
+                errorText: `Field ${i + 1} can not be empty`,
+                showError: true,
+              });
+              dataValidated = false;
+              break;
+            } else if (pins[i] === pins[j]) {
+              this.setState({
+                errorText: `Field ${i + 1} and Field ${j + 1} can not be same`,
+                showError: true,
+              });
               dataValidated = false;
               break;
             }
@@ -82,26 +94,45 @@ class GenerateScreen extends React.Component {
           let charArr = pins[i].split('');
           for (let k = 0; k < charArr.length; k++) {
             if (charArr.length < 4) {
+              this.setState({
+                errorText: `Field ${i + 1} must have 4 digits`,
+                showError: true,
+              });
               dataValidated = false;
               break;
             } else if (k < 3) {
               if (charArr[k] === charArr[k + 1]) {
-                console.log('failed = ');
                 dataValidated = false;
+                this.setState({
+                  errorText: `Field ${i +
+                    1} can not have two same consecutive digits`,
+                  showError: true,
+                });
+                break;
               } else if (
                 k < 2 &&
                 parseInt(charArr[k]) - parseInt(charArr[k + 1]) === 1 &&
                 parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === 1
               ) {
-                console.log('failed sum');
                 dataValidated = false;
+                this.setState({
+                  errorText: `Field ${i +
+                    1} can not have three consecutive descending digits`,
+                  showError: true,
+                });
+                break;
               } else if (
                 k < 2 &&
                 parseInt(charArr[k]) - parseInt(charArr[k + 1]) === -1 &&
                 parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === -1
               ) {
-                console.log('failed sum');
                 dataValidated = false;
+                this.setState({
+                  errorText: `Field ${i +
+                    1} can not have three consecutive ascending digits`,
+                  showError: true,
+                });
+                break;
               }
             }
           }
@@ -114,64 +145,94 @@ class GenerateScreen extends React.Component {
     return dataValidated;
   };
 
+  removeSymbols = text => {
+    return text.replace(/[- #*;,.<>\{\}\[\]\\\/]/gi, '');
+  }
   render() {
-    const {boxOne, boxTwo, boxThree, boxFour, boxFive} = this.state;
+    const {
+      boxOne,
+      boxTwo,
+      boxThree,
+      boxFour,
+      boxFive,
+      errorText,
+      showError,
+    } = this.state;
 
     return (
-      <View style={styles.container}>
-        <View style={styles.rowContainer}>
-          <InputBox
-            onChangeText={value => this.setState({boxOne: value})}
-            value={boxOne}
-            placeholder="xxxx"
-            maxLength={4}
-            keyboardType="numeric"
-          />
-          <InputBox
-            onChangeText={value => this.setState({boxTwo: value})}
-            value={boxTwo}
-            placeholder="xxxx"
-            maxLength={4}
-            keyboardType="numeric"
-          />
-          <InputBox
-            onChangeText={value => this.setState({boxThree: value})}
-            value={boxThree}
-            maxLength={4}
-            keyboardType="numeric"
-            placeholder="xxxx"
-          />
-          <InputBox
-            onChangeText={value => this.setState({boxFour: value})}
-            value={boxFour}
-            maxLength={4}
-            keyboardType="numeric"
-            placeholder="xxxx"
-          />
-          <InputBox
-            onChangeText={value => this.setState({boxFive: value})}
-            value={boxFive}
-            placeholder="xxxx"
-            maxLength={4}
-            keyboardType="numeric"
-          />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
+          <View style={styles.rowContainer}>
+            <InputBox
+              onChangeText={value =>
+                this.setState({boxOne: this.removeSymbols(value), showError: false})
+              }
+              value={boxOne}
+              placeholder="xxxx"
+              maxLength={4}
+              keyboardType="numeric"
+            />
+            <InputBox
+              onChangeText={value =>
+                this.setState({
+                  boxTwo: this.removeSymbols(value),
+                  showError: false,
+                })
+              }
+              value={boxTwo}
+              placeholder="xxxx"
+              maxLength={4}
+              keyboardType={'number-pad'}
+            />
+            <InputBox
+              onChangeText={value =>
+                this.setState({boxThree: this.removeSymbols(value), showError: false})
+              }
+              value={boxThree}
+              maxLength={4}
+              keyboardType="numeric"
+              placeholder="xxxx"
+            />
+            <InputBox
+              onChangeText={value =>
+                this.setState({boxFour: this.removeSymbols(value), showError: false})
+              }
+              value={boxFour}
+              maxLength={4}
+              keyboardType="numeric"
+              placeholder="xxxx"
+            />
+            <InputBox
+              onChangeText={value =>
+                this.setState({boxFive: this.removeSymbols(value), showError: false})
+              }
+              value={boxFive}
+              placeholder="xxxx"
+              maxLength={4}
+              keyboardType="numeric"
+            />
+          </View>
+          {showError && <Text style={styles.errorMessage}>{errorText}</Text>}
+          <View style={styles.rowContainer}>
+            <Button
+              title="GENERATE"
+              btnStyle={{width: '40%'}}
+              onPress={this.generatePin}
+            />
+            <Button
+              title="SAVE"
+              btnStyle={styles.solidBtn}
+              titleStyle={styles.btnText}
+              onPress={() => this.props.navigation.navigate('Saved')}
+            />
+          </View>
         </View>
-        <View style={styles.rowContainer}>
-          <Button
-            title="GENERATE"
-            btnStyle={{width: '40%'}}
-            onPress={this.generatePin}
-          />
-          <Button
-            title="SAVE"
-            btnStyle={styles.solidBtn}
-            titleStyle={styles.btnText}
-          />
-        </View>
-      </View>
+      </TouchableWithoutFeedback>
     );
   }
 }
+
+
 
 const styles = EStyleSheet.create({
   container: {
@@ -186,11 +247,15 @@ const styles = EStyleSheet.create({
     marginBottom: 20,
   },
   solidBtn: {
-    backgroundColor: 'lightblue',
+    backgroundColor: '#347cff',
     width: '40%',
   },
   btnText: {
     color: '#fff',
+  },
+  errorMessage: {
+    color: '#ff254a',
+    marginBottom: 16,
   },
 });
 

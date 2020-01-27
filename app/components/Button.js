@@ -17,14 +17,14 @@ const styles = EStyleSheet.create({
     paddingVertical: 10,
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: 'lightblue',
+    borderColor: '#347cff',
     backgroundColor: '#fff',
 
     marginHorizontal: 5,
   },
   buttonText: {
     fontSize: 16,
-    color: 'lightblue',
+    color: '#347cff',
   },
 });
 
