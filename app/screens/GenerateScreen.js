@@ -22,29 +22,31 @@ class GenerateScreen extends React.Component {
     };
   }
 
-  componentDidMount(): void {
-    this.subs = [
-      this.props.navigation.addListener('didFocus', payload =>
-        this.componentDidFocus(payload),
-      ),
-    ];
-  }
+  // componentDidMount(): void {
+  //   this.subs = [
+  //     this.props.navigation.addListener('didFocus', payload =>
+  //       this.componentDidFocus(payload),
+  //     ),
+  //   ];
+  // }
 
-  componentDidFocus(payload) {
-    this.setState({
-      boxOne: null,
-      boxTwo: null,
-      boxThree: null,
-      boxFour: null,
-      boxFive: null,
-    });
-  }
+  // componentDidFocus(payload) {
+  //   this.setState({
+  //     boxOne: null,
+  //     boxTwo: null,
+  //     boxThree: null,
+  //     boxFour: null,
+  //     boxFive: null,
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subs.forEach(sub => sub.remove());
-  }
-
-  generatePin = () => {
+  // componentWillUnmount() {
+  //   this.subs.forEach(sub => sub.remove());
+  // }
+  /**
+   * Function to validate and save pin to Redux
+   */
+  savePin = () => {
     const {boxOne, boxTwo, boxThree, boxFour, boxFive} = this.state;
 
     let pins = [];
@@ -63,16 +65,63 @@ class GenerateScreen extends React.Component {
       };
 
       this.props.addPin(pinDetail);
-      this.props.navigation.navigate('Saved');
+      alert('Pin Saved');
+      this.setState({
+        boxOne: null,
+        boxTwo: null,
+        boxThree: null,
+        boxFour: null,
+        boxFive: null,
+      });
+      // this.props.navigation.navigate('Saved');
     }
   };
 
+  generatePin = () => {
+    let pins = [];
+    let position = 0;
+    while (position < 5) {
+      let newPin = (Math.floor(Math.random() * 10000) + 1).toString();
+      // console.log(newPin);
+      if (this.checkDigits(position, newPin, false)) {
+        pins[position] = newPin;
+        let pinMatched = false;
+        for (let i = pins.length; i > -1; i--) {
+          if (position !== i) {
+            if (pins[position] === pins[i]) {
+              pinMatched = true;
+              break;
+            }
+          }
+        }
+        if (!pinMatched) {
+          position += 1;
+          // console.log(position);
+        }
+      }
+    }
+    this.setState({
+      boxOne: pins[0],
+      boxTwo: pins[1],
+      boxThree: pins[2],
+      boxFour: pins[3],
+      boxFive: pins[4],
+      showError: false,
+    });
+  };
+
+  /**
+   * Check the validations/Logic for pins
+   * @param pins
+   * @returns {boolean}
+   */
   validateData = pins => {
     let dataValidated = true;
     for (let i = 0; i < pins.length; i++) {
       if (dataValidated && pins[i] !== null) {
         for (let j = 0; j < pins.length; j++) {
           if (i !== j) {
+            console.log(pins[i]);
             if (pins[i] === null) {
               this.setState({
                 errorText: `Field ${i + 1} can not be empty`,
@@ -91,63 +140,89 @@ class GenerateScreen extends React.Component {
           }
         }
         if (dataValidated) {
-          let charArr = pins[i].split('');
-          for (let k = 0; k < charArr.length; k++) {
-            if (charArr.length < 4) {
-              this.setState({
-                errorText: `Field ${i + 1} must have 4 digits`,
-                showError: true,
-              });
-              dataValidated = false;
-              break;
-            } else if (k < 3) {
-              if (charArr[k] === charArr[k + 1]) {
-                dataValidated = false;
-                this.setState({
-                  errorText: `Field ${i +
-                    1} can not have two same consecutive digits`,
-                  showError: true,
-                });
-                break;
-              } else if (
-                k < 2 &&
-                parseInt(charArr[k]) - parseInt(charArr[k + 1]) === 1 &&
-                parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === 1
-              ) {
-                dataValidated = false;
-                this.setState({
-                  errorText: `Field ${i +
-                    1} can not have three consecutive descending digits`,
-                  showError: true,
-                });
-                break;
-              } else if (
-                k < 2 &&
-                parseInt(charArr[k]) - parseInt(charArr[k + 1]) === -1 &&
-                parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === -1
-              ) {
-                dataValidated = false;
-                this.setState({
-                  errorText: `Field ${i +
-                    1} can not have three consecutive ascending digits`,
-                  showError: true,
-                });
-                break;
-              }
-            }
-          }
+          dataValidated = this.checkDigits(i, pins[i], true);
         }
       } else {
-        dataValidated = false;
+        if (dataValidated) {
+          this.setState({
+            errorText: `Field ${i + 1} can not be empty`,
+            showError: true,
+          });
+          dataValidated = false;
+        }
       }
     }
+    return dataValidated;
+  };
 
+  /**
+   * Function to check the digits validation
+   * @param  i current position in the pins array.
+   * @param pin current pin String to be validated.
+   * @param shouldShowError whether to show error or not.
+   **/
+  checkDigits = (i, pin, shouldShowError) => {
+    let dataValidated = true;
+    let charArr = pin.split('');
+    for (let k = 0; k < charArr.length; k++) {
+      if (charArr.length < 4) {
+        if (shouldShowError) {
+          this.setState({
+            errorText: `Field ${i + 1} must have 4 digits`,
+            showError: true,
+          });
+        }
+        dataValidated = false;
+        break;
+      } else if (k < 3) {
+        if (charArr[k] === charArr[k + 1]) {
+          dataValidated = false;
+          if (shouldShowError) {
+            this.setState({
+              errorText: `Field ${i +
+                1} can not have two same consecutive digits`,
+              showError: true,
+            });
+          }
+          break;
+        } else if (
+          k < 2 &&
+          parseInt(charArr[k]) - parseInt(charArr[k + 1]) === 1 &&
+          parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === 1
+        ) {
+          dataValidated = false;
+          if (shouldShowError) {
+            this.setState({
+              errorText: `Field ${i +
+                1} can not have three consecutive descending digits`,
+              showError: true,
+            });
+          }
+          break;
+        } else if (
+          k < 2 &&
+          parseInt(charArr[k]) - parseInt(charArr[k + 1]) === -1 &&
+          parseInt(charArr[k + 1]) - parseInt(charArr[k + 2]) === -1
+        ) {
+          dataValidated = false;
+          if (shouldShowError) {
+            this.setState({
+              errorText: `Field ${i +
+                1} can not have three consecutive ascending digits`,
+              showError: true,
+            });
+          }
+          break;
+        }
+      }
+    }
     return dataValidated;
   };
 
   removeSymbols = text => {
     return text.replace(/[- #*;,.<>\{\}\[\]\\\/]/gi, '');
-  }
+  };
+
   render() {
     const {
       boxOne,
@@ -165,7 +240,10 @@ class GenerateScreen extends React.Component {
           <View style={styles.rowContainer}>
             <InputBox
               onChangeText={value =>
-                this.setState({boxOne: this.removeSymbols(value), showError: false})
+                this.setState({
+                  boxOne: this.removeSymbols(value),
+                  showError: false,
+                })
               }
               value={boxOne}
               placeholder="xxxx"
@@ -186,7 +264,10 @@ class GenerateScreen extends React.Component {
             />
             <InputBox
               onChangeText={value =>
-                this.setState({boxThree: this.removeSymbols(value), showError: false})
+                this.setState({
+                  boxThree: this.removeSymbols(value),
+                  showError: false,
+                })
               }
               value={boxThree}
               maxLength={4}
@@ -195,7 +276,10 @@ class GenerateScreen extends React.Component {
             />
             <InputBox
               onChangeText={value =>
-                this.setState({boxFour: this.removeSymbols(value), showError: false})
+                this.setState({
+                  boxFour: this.removeSymbols(value),
+                  showError: false,
+                })
               }
               value={boxFour}
               maxLength={4}
@@ -204,7 +288,10 @@ class GenerateScreen extends React.Component {
             />
             <InputBox
               onChangeText={value =>
-                this.setState({boxFive: this.removeSymbols(value), showError: false})
+                this.setState({
+                  boxFive: this.removeSymbols(value),
+                  showError: false,
+                })
               }
               value={boxFive}
               placeholder="xxxx"
@@ -223,7 +310,10 @@ class GenerateScreen extends React.Component {
               title="SAVE"
               btnStyle={styles.solidBtn}
               titleStyle={styles.btnText}
-              onPress={() => this.props.navigation.navigate('Saved')}
+              onPress={
+                this.savePin
+                /*() => this.props.navigation.navigate('Saved')*/
+              }
             />
           </View>
         </View>
@@ -231,8 +321,6 @@ class GenerateScreen extends React.Component {
     );
   }
 }
-
-
 
 const styles = EStyleSheet.create({
   container: {

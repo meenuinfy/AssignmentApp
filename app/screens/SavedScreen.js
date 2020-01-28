@@ -1,8 +1,7 @@
 import React from 'react';
-import {View, FlatList, ScrollView, Text} from 'react-native';
+import {View, FlatList, ScrollView, Text, SafeAreaView} from 'react-native';
 import EStyleSheet from 'react-native-extended-stylesheet';
 import {connect} from 'react-redux';
-
 import InputBox from '../components/InputBox';
 import Button from '../components/Button';
 import {updateName, deletePin} from '../store/actions';
@@ -64,7 +63,7 @@ class SavedScreen extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         {this.props.pins && this.props.pins.length === 0 ? (
           <View style={styles.nodataText}>
             <Text>No Data</Text>
@@ -77,7 +76,7 @@ class SavedScreen extends React.Component {
             extraData={this.state.refreshed}
           />
         )}
-      </View>
+      </SafeAreaView>
     );
   }
 }
