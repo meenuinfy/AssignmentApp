@@ -1,5 +1,12 @@
 import React from 'react';
-import {Text, View, TouchableWithoutFeedback, Keyboard} from 'react-native';
+import {
+  Text,
+  View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  ScrollView,
+  FlatList,
+} from 'react-native';
 import EStyleSheet from 'react-native-extended-stylesheet';
 import {connect} from 'react-redux';
 
@@ -22,27 +29,6 @@ class GenerateScreen extends React.Component {
     };
   }
 
-  // componentDidMount(): void {
-  //   this.subs = [
-  //     this.props.navigation.addListener('didFocus', payload =>
-  //       this.componentDidFocus(payload),
-  //     ),
-  //   ];
-  // }
-
-  // componentDidFocus(payload) {
-  //   this.setState({
-  //     boxOne: null,
-  //     boxTwo: null,
-  //     boxThree: null,
-  //     boxFour: null,
-  //     boxFive: null,
-  //   });
-  // }
-
-  // componentWillUnmount() {
-  //   this.subs.forEach(sub => sub.remove());
-  // }
   /**
    * Function to validate and save pin to Redux
    */
@@ -73,7 +59,6 @@ class GenerateScreen extends React.Component {
         boxFour: null,
         boxFive: null,
       });
-      // this.props.navigation.navigate('Saved');
     }
   };
 
@@ -96,7 +81,6 @@ class GenerateScreen extends React.Component {
         }
         if (!pinMatched) {
           position += 1;
-          // console.log(position);
         }
       }
     }
@@ -220,7 +204,7 @@ class GenerateScreen extends React.Component {
   };
 
   removeSymbols = text => {
-    return text.replace(/[- #*;,.<>\{\}\[\]\\\/]/gi, '');
+    return text.replace(/[- #*;,.<>{\}\[\]\\\/]/gi, '');
   };
 
   render() {
@@ -310,10 +294,7 @@ class GenerateScreen extends React.Component {
               title="SAVE"
               btnStyle={styles.solidBtn}
               titleStyle={styles.btnText}
-              onPress={
-                this.savePin
-                /*() => this.props.navigation.navigate('Saved')*/
-              }
+              onPress={this.savePin}
             />
           </View>
         </View>
